@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem *)",
+      "Bash(xargs grep *)",
+      "Bash(npm run *)",
+      "Bash(rm -rf prisma/generated)",
+      "Bash(npx prisma *)",
+      "Bash(Select-Object FullName)",
+      "Bash(Select-Object -First 30)",
+      "Bash(Format-Table -Property FullName)",
+      "Bash(npx tsc *)",
+      "Bash(cd *)",
+      "Bash(powershell -Command \"Get-ChildItem -Path . | Select-Object -ExpandProperty Name\")",
+      "Bash(powershell -Command \"Get-ChildItem -Path backend/src -Recurse -Exclude node_modules,dist | Select-Object -ExpandProperty FullName\")",
+      "Bash(powershell -Command \"Get-ChildItem -Path frontend/src -Recurse -Exclude node_modules | Select-Object -ExpandProperty FullName\")",
+      "Bash(powershell -Command \"Get-ChildItem -Recurse -Depth 3 -Exclude node_modules,dist,coverage,.next | Format-Table -Property FullName,PSIsContainer -AutoSize\")",
+      "Bash(powershell *)"
+    ],
+    "deny": [
+      "Bash(git *)"
+    ]
+  }
+}
