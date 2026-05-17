@@ -8,6 +8,6 @@ async function bootstrap() {
     origin: process.env.FRONTEND_URL ?? 'http://localhost:3000',
   });
   app.setGlobalPrefix('api');
-  await app.listen(process.env.PORT ?? 3003);
+  await app.listen(process.env.PORT ?? 3001);
 }
 void bootstrap();
