@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { DomainError } from '../errors/domain-error';
 
-const UUID_V4_REGEX =
+export const UUID_V4_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export abstract class Entity<T extends object> {
