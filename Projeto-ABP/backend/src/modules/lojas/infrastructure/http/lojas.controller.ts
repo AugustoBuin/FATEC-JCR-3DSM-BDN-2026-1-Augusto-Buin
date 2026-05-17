@@ -26,6 +26,8 @@ import {
 import { LojaEntity } from '../../domain/entities/loja.entity';
 import { ZodValidationPipe } from '@/shared/pipes/zod-validation.pipe';
 import { DomainError } from '@/shared/errors/domain-error';
+import { Roles } from '@/shared/auth/roles.decorator';
+import { CurrentUser, JwtPayload } from '@/shared/auth/current-user.decorator';
 
 @Controller('lojas')
 export class LojasController {
@@ -38,9 +40,10 @@ export class LojasController {
   ) {}
 
   @Post()
+  @Roles('admin', 'gerente geral')
   @UsePipes(new ZodValidationPipe(createLojaSchema))
-  async create(@Body() dto: CreateLojaDto) {
-    const loja = await this.createLoja.execute(dto);
+  async create(@Body() dto: CreateLojaDto, @CurrentUser() user: JwtPayload) {
+    const loja = await this.createLoja.execute(dto, user.sub);
     return this.toResponse(loja);
   }
 
@@ -55,40 +58,43 @@ export class LojasController {
     try {
       const loja = await this.findLoja.execute(id);
       return this.toResponse(loja);
-    } catch (e) {
-      if (e instanceof DomainError && e.code === 'LOJA_NOT_FOUND') {
-        throw new NotFoundException(e.message);
+    } catch (error) {
+      if (error instanceof DomainError && error.code === 'LOJA_NOT_FOUND') {
+        throw new NotFoundException(error.message);
       }
-      throw e;
+      throw error;
     }
   }
 
   @Put(':id')
+  @Roles('admin', 'gerente geral')
   async update(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateLojaSchema)) dto: UpdateLojaDto,
+    @CurrentUser() user: JwtPayload,
   ) {
     try {
-      const loja = await this.updateLoja.execute(id, dto);
+      const loja = await this.updateLoja.execute(id, dto, user.sub);
       return this.toResponse(loja);
-    } catch (e) {
-      if (e instanceof DomainError && e.code === 'LOJA_NOT_FOUND') {
-        throw new NotFoundException(e.message);
+    } catch (error) {
+      if (error instanceof DomainError && error.code === 'LOJA_NOT_FOUND') {
+        throw new NotFoundException(error.message);
       }
-      throw e;
+      throw error;
     }
   }
 
   @Delete(':id')
+  @Roles('admin')
   @HttpCode(204)
-  async remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     try {
-      await this.deleteLoja.execute(id);
-    } catch (e) {
-      if (e instanceof DomainError && e.code === 'LOJA_NOT_FOUND') {
-        throw new NotFoundException(e.message);
+      await this.deleteLoja.execute(id, user.sub);
+    } catch (error) {
+      if (error instanceof DomainError && error.code === 'LOJA_NOT_FOUND') {
+        throw new NotFoundException(error.message);
       }
-      throw e;
+      throw error;
     }
   }
 

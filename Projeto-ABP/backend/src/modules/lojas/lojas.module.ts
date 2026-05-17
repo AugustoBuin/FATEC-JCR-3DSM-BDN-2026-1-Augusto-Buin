@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { LojaSchemaClass, LojaSchema } from './infrastructure/database/mongoose/loja.schema';
+import {
+  LojaSchemaClass,
+  LojaSchema,
+} from './infrastructure/database/mongoose/loja.schema';
 import { MongooseLojaRepository } from './infrastructure/database/repos/mongoose-loja.repository';
 import { LOJA_REPOSITORY } from './domain/repositories/loja-repository.interface';
 import { CreateLojaUseCase } from './application/use-cases/create-loja.use-case';

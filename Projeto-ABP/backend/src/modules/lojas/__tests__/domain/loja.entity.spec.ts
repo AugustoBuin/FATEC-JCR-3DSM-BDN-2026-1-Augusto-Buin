@@ -5,7 +5,7 @@ const validProps = {
   name: 'Loja Centro',
   city: 'São José dos Campos',
   address: 'Rua das Flores, 123',
-  phone: '1234-5678',
+  phone: '5512987654321',
 };
 
 describe('LojaEntity', () => {
@@ -55,5 +55,27 @@ describe('LojaEntity', () => {
     const a = LojaEntity.create(validProps);
     const b = LojaEntity.create(validProps);
     expect(a.equals(b)).toBe(false);
+  });
+
+  it('throws INVALID_LOJA_NAME when name is empty', () => {
+    expect(() => LojaEntity.create({ name: '', city: 'Cidade' })).toThrow(
+      DomainError,
+    );
+  });
+
+  it('throws INVALID_LOJA_CITY when city is empty', () => {
+    expect(() => LojaEntity.create({ name: 'Loja', city: '' })).toThrow(
+      DomainError,
+    );
+  });
+
+  it('update() throws INVALID_LOJA_NAME when setting empty name', () => {
+    const loja = LojaEntity.create(validProps);
+    expect(() => loja.update({ name: '' })).toThrow(DomainError);
+  });
+
+  it('update() throws INVALID_LOJA_CITY when setting empty city', () => {
+    const loja = LojaEntity.create(validProps);
+    expect(() => loja.update({ city: '   ' })).toThrow(DomainError);
   });
 });
