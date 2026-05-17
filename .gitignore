@@ -1,2 +1,4 @@
 .env
 /node_modules
+/Projeto-ABP/backend/dist
+/Projeto-ABP/backend/node_modules

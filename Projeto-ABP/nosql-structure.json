@@ -1,0 +1,112 @@
+{
+  "collections": [
+    {
+      "name": "times",
+      "description": "equipes de vendas organizadas por lojas ou regiões",
+      "schema": {
+        "_id": "UUID - Unique",
+        "name": "String",
+        "createdAt": "Timestamptz",
+        "updatedAt": "Timestamptz"
+      }
+    },
+    {
+      "name": "usuarios",
+      "description": "dados dos usuários do sistema, incluindo credenciais e papéis",
+      "schema": {
+        "_id": "UUID - Unique",
+        "teamId": "UUID - FK",
+        "name": "String",
+        "email": "email(xx@xx.com) - Unique",
+        "role": "Enum('admin', 'gerente geral', 'gerente de equipe', 'atendente')",
+        "passwordHash": "Hash",
+        "createdAt": "Timestamptz",
+        "updatedAt": "Timestamptz"
+      }
+    },
+    {
+      "name": "clientes",
+      "description": "informações dos clientes, incluindo dados de contato e endereço",
+      "schema": {
+        "_id": "UUID - Unique",
+        "name": "String",
+        "phone": "phone(55+DDD+9_digit_number) - Unique",
+        "email": "email(xx@xx.com)",
+        "cpf": "String(11 digits)",
+        "address": "String",
+        "createdAt": "Timestamptz"
+      }
+    },
+    {
+      "name": "leads",
+      "description": "potenciais clientes em diferentes estágios do funil de vendas, com informações sobre a origem do lead e o status da negociação",
+      "schema": {
+        "_id": "UUID - Unique",
+        "teamId": "UUID - FK",
+        "clientId": "UUID - FK",
+        "userId": "UUID - FK",
+        "source": "Enum('Facebook', 'Instagram', 'Mercado Livre', 'Webmotors')",
+        "subject": "String",
+        "negotiation": {
+          "importance": "Enum('frio', 'morno', 'quente')",
+          "status": "Enum('contato inicial', 'em negociação', 'proposta enviada', 'teste drive', 'fechado - vendido', 'fechado - não vendido')",
+          "isOpen": "boolean",
+          "lastUpdate": "Timestamptz"
+        },
+        "createdAt": "Timestamptz",
+        "updatedAt": "Timestamptz"
+      }
+    },
+    {
+      "name": "logEventos",
+      "description": "registro de eventos e mudanças de status dos leads, permitindo rastrear o histórico de interações e negociações",
+      "schema": {
+        "_id": "UUID - Unique",
+        "userId": "UUID - FK",
+        "eventType": "String",
+        "eventPayload": {
+          "targetId": "UUID",
+          "changes": {
+            "before": {
+              "table.field": "String"
+            },
+            "after": {
+              "table.field": "String"
+            }
+          }
+        },
+        "createdAt": "Timestamptz"
+      }
+    }
+  ],
+  "indexes": [
+    {
+      "collection": "usuarios",
+      "fields": {
+        "email": "email(xx@xx.com)"
+      },
+      "options": {
+        "unique": true
+      }
+    },
+    {
+      "collection": "clientes",
+      "fields": {
+        "phone": "phone(55+DDD+9_digit_number)"
+      },
+      "options": {
+        "unique": true
+      }
+    },
+    {
+      "collection": "leads",
+      "fields": {
+        "teamId": "UUID",
+        "userId": "UUID",
+        "negotiation.importance": "Enum('frio', 'morno', 'quente')",
+        "negotiation.status": "Enum('contato inicial', 'em negociação', 'proposta enviada', 'teste drive', 'fechado - vendido', 'fechado - não vendido')",
+        "negotiation.isOpen": "boolean"
+      }
+    }
+  ]
+}
