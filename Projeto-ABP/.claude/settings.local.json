@@ -26,7 +26,11 @@
       "Bash(\"C:\\\\Users\\\\ah.buin_1000vallemul\\\\Documents\\\\GitHub\\\\FATEC-JCR-3DSM-BDN-2026-1-Augusto-Buin\\\\Projeto-ABP\\\\backend\\\\src\\\\modules\\\\clientes\\\\domain\\\\repositories\",)",
       "Bash(Out-Null)",
       "Bash(Write-Output \"directories created\")",
-      "Bash(npx jest *)"
+      "Bash(npx jest *)",
+      "Bash(node -e \"const z = require\\('zod'\\); console.log\\(z.ZodIssueCode ? 'v3-like' : 'v4+'\\); const pkg = require\\('./node_modules/zod/package.json'\\); console.log\\('zod version:', pkg.version\\);\")",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(grep -E \"\\(create|update|delete\\)-\\(time|cliente\\)\\\\.use-case\\\\.ts$|login\\\\.use-case\\\\.ts$|auth\\\\.controller\\\\.ts$|auth\\\\.module\\\\.ts$\")",
+      "Bash(npx eslint *)"
     ],
     "deny": [
       "Bash(git *)"
