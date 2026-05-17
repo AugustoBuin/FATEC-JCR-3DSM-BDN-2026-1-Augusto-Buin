@@ -65,10 +65,7 @@ export class ClienteEntity extends Entity<ClienteProps> {
     );
   }
 
-  static restore(
-    input: ClienteCreateInput & { phone: string; email: string; cpf?: string },
-    id: string,
-  ): ClienteEntity {
+  static restore(input: ClienteCreateInput, id: string): ClienteEntity {
     return ClienteEntity.create(input, id);
   }
 

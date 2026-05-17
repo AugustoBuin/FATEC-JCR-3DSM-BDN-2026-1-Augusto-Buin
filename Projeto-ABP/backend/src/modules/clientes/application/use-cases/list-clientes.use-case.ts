@@ -12,7 +12,10 @@ export class ListClientesUseCase {
     private readonly clienteRepository: IClienteRepository,
   ) {}
 
-  async execute(filters?: { phone?: string; cpf?: string }): Promise<ClienteEntity[]> {
+  async execute(filters?: {
+    phone?: string;
+    cpf?: string;
+  }): Promise<ClienteEntity[]> {
     return this.clienteRepository.findAll(filters);
   }
 }

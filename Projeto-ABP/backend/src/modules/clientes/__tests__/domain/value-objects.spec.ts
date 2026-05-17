@@ -73,9 +73,9 @@ describe('Phone', () => {
 });
 
 describe('Cpf', () => {
-  it('accepts exactly 11 digits', () => {
-    const cpf = Cpf.create('12345678901');
-    expect(cpf.value).toBe('12345678901');
+  it('accepts a valid CPF with correct checksum', () => {
+    const cpf = Cpf.create('52998224725');
+    expect(cpf.value).toBe('52998224725');
   });
 
   it('throws for 10 digits', () => {
@@ -94,9 +94,17 @@ describe('Cpf', () => {
     expect(() => Cpf.create('')).toThrow(DomainError);
   });
 
+  it('throws for all-same-digit CPF (e.g. 11111111111)', () => {
+    expect(() => Cpf.create('11111111111')).toThrow(DomainError);
+  });
+
+  it('throws for invalid checksum', () => {
+    expect(() => Cpf.create('12345678901')).toThrow(DomainError);
+  });
+
   it('equals returns true for same value', () => {
-    const a = Cpf.create('12345678901');
-    const b = Cpf.create('12345678901');
+    const a = Cpf.create('52998224725');
+    const b = Cpf.create('52998224725');
     expect(a.equals(b)).toBe(true);
   });
 });

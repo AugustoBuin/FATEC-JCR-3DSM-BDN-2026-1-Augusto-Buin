@@ -21,10 +21,10 @@ describe('ClienteEntity', () => {
   it('creates a cliente with all fields', () => {
     const cliente = ClienteEntity.create({
       ...validProps,
-      cpf: '12345678901',
+      cpf: '52998224725',
       address: 'Rua das Flores, 123',
     });
-    expect(cliente.cpf).toBe('12345678901');
+    expect(cliente.cpf).toBe('52998224725');
     expect(cliente.address).toBe('Rua das Flores, 123');
   });
 
@@ -47,9 +47,9 @@ describe('ClienteEntity', () => {
   });
 
   it('throws for invalid CPF when provided', () => {
-    expect(() =>
-      ClienteEntity.create({ ...validProps, cpf: '123' }),
-    ).toThrow(DomainError);
+    expect(() => ClienteEntity.create({ ...validProps, cpf: '123' })).toThrow(
+      DomainError,
+    );
   });
 
   it('updates name and email', () => {

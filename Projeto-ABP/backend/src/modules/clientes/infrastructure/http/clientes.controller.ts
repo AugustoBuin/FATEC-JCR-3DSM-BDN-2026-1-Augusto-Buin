@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  ConflictException,
   Delete,
   Get,
   HttpCode,
@@ -16,11 +17,19 @@ import { FindClienteUseCase } from '../../application/use-cases/find-cliente.use
 import { ListClientesUseCase } from '../../application/use-cases/list-clientes.use-case';
 import { UpdateClienteUseCase } from '../../application/use-cases/update-cliente.use-case';
 import { DeleteClienteUseCase } from '../../application/use-cases/delete-cliente.use-case';
-import { createClienteSchema, CreateClienteDto } from '../../application/dtos/create-cliente.dto';
-import { updateClienteSchema, UpdateClienteDto } from '../../application/dtos/update-cliente.dto';
+import {
+  createClienteSchema,
+  CreateClienteDto,
+} from '../../application/dtos/create-cliente.dto';
+import {
+  updateClienteSchema,
+  UpdateClienteDto,
+} from '../../application/dtos/update-cliente.dto';
 import { ClienteEntity } from '../../domain/entities/cliente.entity';
 import { ZodValidationPipe } from '@/shared/pipes/zod-validation.pipe';
 import { DomainError } from '@/shared/errors/domain-error';
+import { Roles } from '@/shared/auth/roles.decorator';
+import { CurrentUser, JwtPayload } from '@/shared/auth/current-user.decorator';
 
 @Controller('clientes')
 export class ClientesController {
@@ -33,10 +42,22 @@ export class ClientesController {
   ) {}
 
   @Post()
+  @Roles('admin', 'gerente geral', 'gerente de equipe')
   @UsePipes(new ZodValidationPipe(createClienteSchema))
-  async create(@Body() dto: CreateClienteDto) {
-    const cliente = await this.createCliente.execute(dto);
-    return this.toResponse(cliente);
+  async create(@Body() dto: CreateClienteDto, @CurrentUser() user: JwtPayload) {
+    try {
+      const cliente = await this.createCliente.execute(dto, user.sub);
+      return this.toResponse(cliente);
+    } catch (error) {
+      if (
+        error instanceof DomainError &&
+        (error.code === 'PHONE_ALREADY_EXISTS' ||
+          error.code === 'CPF_ALREADY_EXISTS')
+      ) {
+        throw new ConflictException(error.message);
+      }
+      throw error;
+    }
   }
 
   @Get()
@@ -49,39 +70,51 @@ export class ClientesController {
   async findOne(@Param('id') id: string) {
     try {
       return this.toResponse(await this.findCliente.execute(id));
-    } catch (e) {
-      if (e instanceof DomainError && e.code === 'CLIENT_NOT_FOUND') {
-        throw new NotFoundException(e.message);
+    } catch (error) {
+      if (error instanceof DomainError && error.code === 'CLIENT_NOT_FOUND') {
+        throw new NotFoundException(error.message);
       }
-      throw e;
+      throw error;
     }
   }
 
   @Put(':id')
+  @Roles('admin', 'gerente geral', 'gerente de equipe')
   async update(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateClienteSchema)) dto: UpdateClienteDto,
+    @CurrentUser() user: JwtPayload,
   ) {
     try {
-      return this.toResponse(await this.updateCliente.execute(id, dto));
-    } catch (e) {
-      if (e instanceof DomainError && e.code === 'CLIENT_NOT_FOUND') {
-        throw new NotFoundException(e.message);
+      return this.toResponse(
+        await this.updateCliente.execute(id, dto, user.sub),
+      );
+    } catch (error) {
+      if (error instanceof DomainError && error.code === 'CLIENT_NOT_FOUND') {
+        throw new NotFoundException(error.message);
       }
-      throw e;
+      if (
+        error instanceof DomainError &&
+        (error.code === 'PHONE_ALREADY_EXISTS' ||
+          error.code === 'CPF_ALREADY_EXISTS')
+      ) {
+        throw new ConflictException(error.message);
+      }
+      throw error;
     }
   }
 
   @Delete(':id')
+  @Roles('admin', 'gerente geral')
   @HttpCode(204)
-  async remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     try {
-      await this.deleteCliente.execute(id);
-    } catch (e) {
-      if (e instanceof DomainError && e.code === 'CLIENT_NOT_FOUND') {
-        throw new NotFoundException(e.message);
+      await this.deleteCliente.execute(id, user.sub);
+    } catch (error) {
+      if (error instanceof DomainError && error.code === 'CLIENT_NOT_FOUND') {
+        throw new NotFoundException(error.message);
       }
-      throw e;
+      throw error;
     }
   }
 

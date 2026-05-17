@@ -4,8 +4,14 @@ export const createClienteSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório.'),
   phone: z
     .string()
-    .regex(/^\d{13}$/, 'Telefone inválido. Use o formato: 55 + DDD + 9 dígitos.')
-    .refine((v) => v.startsWith('55'), 'Telefone inválido. Use o formato: 55 + DDD + 9 dígitos.'),
+    .regex(
+      /^\d{13}$/,
+      'Telefone inválido. Use o formato: 55 + DDD + 9 dígitos.',
+    )
+    .refine(
+      (v) => v.startsWith('55'),
+      'Telefone inválido. Use o formato: 55 + DDD + 9 dígitos.',
+    ),
   email: z.string().email('E-mail inválido.'),
   cpf: z
     .string()

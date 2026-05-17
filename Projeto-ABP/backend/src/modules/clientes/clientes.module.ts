@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ClienteSchemaClass, ClienteSchema } from './infrastructure/database/mongoose/cliente.schema';
+import {
+  ClienteSchemaClass,
+  ClienteSchema,
+} from './infrastructure/database/mongoose/cliente.schema';
 import { MongooseClienteRepository } from './infrastructure/database/repos/mongoose-cliente.repository';
 import { CLIENTE_REPOSITORY } from './domain/repositories/cliente-repository.interface';
 import { CreateClienteUseCase } from './application/use-cases/create-cliente.use-case';
