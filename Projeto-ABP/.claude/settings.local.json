@@ -15,7 +15,18 @@
       "Bash(powershell -Command \"Get-ChildItem -Path backend/src -Recurse -Exclude node_modules,dist | Select-Object -ExpandProperty FullName\")",
       "Bash(powershell -Command \"Get-ChildItem -Path frontend/src -Recurse -Exclude node_modules | Select-Object -ExpandProperty FullName\")",
       "Bash(powershell -Command \"Get-ChildItem -Recurse -Depth 3 -Exclude node_modules,dist,coverage,.next | Format-Table -Property FullName,PSIsContainer -AutoSize\")",
-      "Bash(powershell *)"
+      "Bash(powershell *)",
+      "Bash(npx prettier *)",
+      "Bash(npm view *)",
+      "Bash(npm test *)",
+      "Bash(New-Item -ItemType Directory -Force -Path \"C:\\\\Users\\\\ah.buin_1000vallemul\\\\Documents\\\\GitHub\\\\FATEC-JCR-3DSM-BDN-2026-1-Augusto-Buin\\\\Projeto-ABP\\\\backend\\\\src\\\\modules\\\\clientes\\\\__tests__\\\\domain\",)",
+      "Bash(\"C:\\\\Users\\\\ah.buin_1000vallemul\\\\Documents\\\\GitHub\\\\FATEC-JCR-3DSM-BDN-2026-1-Augusto-Buin\\\\Projeto-ABP\\\\backend\\\\src\\\\modules\\\\clientes\\\\__tests__\\\\application\",)",
+      "Bash(\"C:\\\\Users\\\\ah.buin_1000vallemul\\\\Documents\\\\GitHub\\\\FATEC-JCR-3DSM-BDN-2026-1-Augusto-Buin\\\\Projeto-ABP\\\\backend\\\\src\\\\modules\\\\clientes\\\\domain\\\\entities\",)",
+      "Bash(\"C:\\\\Users\\\\ah.buin_1000vallemul\\\\Documents\\\\GitHub\\\\FATEC-JCR-3DSM-BDN-2026-1-Augusto-Buin\\\\Projeto-ABP\\\\backend\\\\src\\\\modules\\\\clientes\\\\domain\\\\value-objects\",)",
+      "Bash(\"C:\\\\Users\\\\ah.buin_1000vallemul\\\\Documents\\\\GitHub\\\\FATEC-JCR-3DSM-BDN-2026-1-Augusto-Buin\\\\Projeto-ABP\\\\backend\\\\src\\\\modules\\\\clientes\\\\domain\\\\repositories\",)",
+      "Bash(Out-Null)",
+      "Bash(Write-Output \"directories created\")",
+      "Bash(npx jest *)"
     ],
     "deny": [
       "Bash(git *)"

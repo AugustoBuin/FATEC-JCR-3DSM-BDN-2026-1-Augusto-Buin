@@ -1,10 +1,25 @@
 {
+  "_note": "All _id fields use UUID v4 strings (not MongoDB ObjectId). Mongoose schemas must configure _id as String with a UUID default via crypto.randomUUID().",
   "collections": [
     {
-      "name": "times",
-      "description": "equipes de vendas organizadas por lojas ou regiões",
+      "name": "lojas",
+      "description": "Unidades físicas da revendedora onde os atendimentos ocorrem.",
       "schema": {
-        "_id": "UUID - Unique",
+        "_id": "UUID v4 - Unique",
+        "name": "String",
+        "address": "String",
+        "city": "String",
+        "phone": "String",
+        "createdAt": "Timestamptz",
+        "updatedAt": "Timestamptz"
+      }
+    },
+    {
+      "name": "times",
+      "description": "Equipes de vendas vinculadas a uma loja.",
+      "schema": {
+        "_id": "UUID v4 - Unique",
+        "lojaId": "UUID v4 - FK → lojas._id",
         "name": "String",
         "createdAt": "Timestamptz",
         "updatedAt": "Timestamptz"
@@ -12,101 +27,223 @@
     },
     {
       "name": "usuarios",
-      "description": "dados dos usuários do sistema, incluindo credenciais e papéis",
+      "description": "Usuários do sistema com credenciais e papéis de acesso.",
       "schema": {
-        "_id": "UUID - Unique",
-        "teamId": "UUID - FK",
+        "_id": "UUID v4 - Unique",
+        "teamId": "UUID v4 - FK → times._id | null (opcional para roles: admin, gerente geral)",
         "name": "String",
-        "email": "email(xx@xx.com) - Unique",
+        "email": "String - Unique - formato email",
         "role": "Enum('admin', 'gerente geral', 'gerente de equipe', 'atendente')",
-        "passwordHash": "Hash",
+        "passwordHash": "String (bcrypt hash)",
         "createdAt": "Timestamptz",
         "updatedAt": "Timestamptz"
       }
     },
     {
       "name": "clientes",
-      "description": "informações dos clientes, incluindo dados de contato e endereço",
+      "description": "Clientes da revendedora com dados de contato e identificação.",
       "schema": {
-        "_id": "UUID - Unique",
+        "_id": "UUID v4 - Unique",
         "name": "String",
-        "phone": "phone(55+DDD+9_digit_number) - Unique",
-        "email": "email(xx@xx.com)",
-        "cpf": "String(11 digits)",
+        "phone": "String - Unique - formato: 55+DDD+9 dígitos",
+        "email": "String - formato email (não único: membros da mesma família podem compartilhar)",
+        "cpf": "String - Unique Sparse - exatamente 11 dígitos (sparse: permite clientes estrangeiros sem CPF)",
         "address": "String",
         "createdAt": "Timestamptz"
       }
     },
     {
       "name": "leads",
-      "description": "potenciais clientes em diferentes estágios do funil de vendas, com informações sobre a origem do lead e o status da negociação",
+      "description": "Potenciais clientes em diferentes estágios do funil de vendas. currentStatus e currentImportance são desnormalizados do documento ativo em negociacoes para evitar joins no dashboard.",
       "schema": {
-        "_id": "UUID - Unique",
-        "teamId": "UUID - FK",
-        "clientId": "UUID - FK",
-        "userId": "UUID - FK",
-        "source": "Enum('Facebook', 'Instagram', 'Mercado Livre', 'Webmotors')",
-        "subject": "String",
-        "negotiation": {
-          "importance": "Enum('frio', 'morno', 'quente')",
-          "status": "Enum('contato inicial', 'em negociação', 'proposta enviada', 'teste drive', 'fechado - vendido', 'fechado - não vendido')",
-          "isOpen": "boolean",
-          "lastUpdate": "Timestamptz"
-        },
+        "_id": "UUID v4 - Unique",
+        "teamId": "UUID v4 - FK → times._id",
+        "lojaId": "UUID v4 - FK → lojas._id",
+        "clientId": "UUID v4 - FK → clientes._id",
+        "userId": "UUID v4 - FK → usuarios._id (atendente responsável)",
+        "source": "Enum('Visita presencial', 'Telefone', 'WhatsApp', 'Instagram', 'Facebook', 'Mercado Livre', 'Webmotors', 'Formulário digital')",
+        "subject": "String (assunto/interesse do cliente)",
+        "currentStatus": "Enum('contato inicial', 'em negociação', 'proposta enviada', 'teste drive', 'fechado - vendido', 'fechado - não vendido') | null (null até a primeira negociação ser aberta)",
+        "currentImportance": "Enum('frio', 'morno', 'quente') | null",
         "createdAt": "Timestamptz",
         "updatedAt": "Timestamptz"
       }
     },
     {
-      "name": "logEventos",
-      "description": "registro de eventos e mudanças de status dos leads, permitindo rastrear o histórico de interações e negociações",
+      "name": "negociacoes",
+      "description": "Negociação vinculada a um lead. historico é embedded (sempre lido junto, sem lifecycle próprio). leadId é referência (lead existe independentemente).",
       "schema": {
-        "_id": "UUID - Unique",
-        "userId": "UUID - FK",
-        "eventType": "String",
+        "_id": "UUID v4 - Unique",
+        "leadId": "UUID v4 - FK → leads._id",
+        "importance": "Enum('frio', 'morno', 'quente')",
+        "status": "Enum('contato inicial', 'em negociação', 'proposta enviada', 'teste drive', 'fechado - vendido', 'fechado - não vendido')",
+        "isOpen": "Boolean (true = ativa; apenas 1 ativa por lead — garantido por índice único parcial)",
+        "motivoEncerramento": "String | null (obrigatório quando isOpen = false; nulo quando isOpen = true)",
+        "historico": [
+          {
+            "_note": "Cada entrada registra o estado ANTERIOR antes da mudança, permitindo reconstruir o diff completo.",
+            "previousStatus": "Enum (valor anterior de status)",
+            "previousImportance": "Enum (valor anterior de importance)",
+            "newStatus": "Enum (valor novo de status)",
+            "newImportance": "Enum (valor novo de importance)",
+            "notes": "String | null (observação do atendente na mudança)",
+            "changedAt": "Timestamptz",
+            "changedBy": "UUID v4 - FK → usuarios._id"
+          }
+        ],
+        "createdAt": "Timestamptz",
+        "updatedAt": "Timestamptz"
+      }
+    },
+    {
+      "name": "logs",
+      "description": "Registro de eventos do sistema: logins, criação, atualização e exclusão de recursos.",
+      "schema": {
+        "_id": "UUID v4 - Unique",
+        "userId": "UUID v4 - FK → usuarios._id",
+        "eventType": "Enum('usuario.login', 'lead.created', 'lead.updated', 'lead.deleted', 'cliente.created', 'cliente.updated', 'cliente.deleted', 'negociacao.created', 'negociacao.updated', 'time.created', 'time.updated', 'time.deleted')",
         "eventPayload": {
-          "targetId": "UUID",
+          "targetId": "UUID v4 (ID do recurso afetado)",
           "changes": {
-            "before": {
-              "table.field": "String"
-            },
-            "after": {
-              "table.field": "String"
-            }
+            "before": "Object | null (estado anterior — null em eventos de criação)",
+            "after": "Object | null (estado posterior — null em eventos de exclusão)"
           }
         },
         "createdAt": "Timestamptz"
       }
     }
   ],
+  "modelingDecisions": {
+    "embedding": [
+      {
+        "location": "negociacoes.historico",
+        "reason": "O histórico é sempre lido junto com a negociação e nunca consultado de forma independente. Embedding elimina joins, garante leitura atômica e mantém o histórico como parte integral do documento."
+      },
+      {
+        "location": "logs.eventPayload",
+        "reason": "O payload é parte integral do evento de log e não tem existência fora dele. Não há consulta independente sobre payloads."
+      }
+    ],
+    "referencing": [
+      {
+        "field": "leads.clientId → clientes._id",
+        "reason": "Clientes existem independentemente dos leads e podem ter múltiplos leads associados. Atualizar dados do cliente não deve exigir atualizar todos os leads."
+      },
+      {
+        "field": "leads.userId → usuarios._id",
+        "reason": "Atendentes existem independentemente e atendem múltiplos leads ao longo do tempo."
+      },
+      {
+        "field": "leads.lojaId → lojas._id",
+        "reason": "Lojas existem independentemente e geram múltiplos leads."
+      },
+      {
+        "field": "leads.teamId → times._id",
+        "reason": "Times existem independentemente e gerenciam múltiplos leads."
+      },
+      {
+        "field": "negociacoes.leadId → leads._id",
+        "reason": "Lead e negociação têm lifecycles separados. A regra de negócio (apenas 1 ativa por lead) é enforçada via unique partial index em (leadId where isOpen=true)."
+      },
+      {
+        "field": "times.lojaId → lojas._id",
+        "reason": "Lojas existem independentemente dos times. Uma loja pode ter múltiplos times. Renomear a loja não exige atualizar todos os times."
+      },
+      {
+        "field": "logs.userId → usuarios._id",
+        "reason": "O usuário que gerou o evento existe independentemente do log."
+      }
+    ],
+    "denormalization": [
+      {
+        "location": "leads.currentStatus + leads.currentImportance",
+        "reason": "Campos desnormalizados do documento ativo em negociacoes. Evitam joins no dashboard operacional (que lista leads com status). Devem ser atualizados em sincronia com negociacoes.status e negociacoes.importance pela camada de aplicação."
+      }
+    ]
+  },
   "indexes": [
     {
       "collection": "usuarios",
-      "fields": {
-        "email": "email(xx@xx.com)"
-      },
-      "options": {
-        "unique": true
-      }
+      "fields": { "email": 1 },
+      "options": { "unique": true, "name": "idx_usuarios_email_unique" }
     },
     {
       "collection": "clientes",
-      "fields": {
-        "phone": "phone(55+DDD+9_digit_number)"
-      },
+      "fields": { "phone": 1 },
+      "options": { "unique": true, "name": "idx_clientes_phone_unique" }
+    },
+    {
+      "collection": "clientes",
+      "fields": { "cpf": 1 },
       "options": {
-        "unique": true
+        "unique": true,
+        "sparse": true,
+        "name": "idx_clientes_cpf_unique_sparse"
       }
     },
     {
       "collection": "leads",
-      "fields": {
-        "teamId": "UUID",
-        "userId": "UUID",
-        "negotiation.importance": "Enum('frio', 'morno', 'quente')",
-        "negotiation.status": "Enum('contato inicial', 'em negociação', 'proposta enviada', 'teste drive', 'fechado - vendido', 'fechado - não vendido')",
-        "negotiation.isOpen": "boolean"
+      "fields": { "userId": 1 },
+      "options": { "name": "idx_leads_userId" }
+    },
+    {
+      "collection": "leads",
+      "fields": { "lojaId": 1 },
+      "options": { "name": "idx_leads_lojaId" }
+    },
+    {
+      "collection": "leads",
+      "fields": { "teamId": 1 },
+      "options": { "name": "idx_leads_teamId" }
+    },
+    {
+      "collection": "leads",
+      "fields": { "currentStatus": 1 },
+      "options": { "name": "idx_leads_currentStatus" }
+    },
+    {
+      "collection": "negociacoes",
+      "fields": { "leadId": 1 },
+      "options": {
+        "unique": true,
+        "partialFilterExpression": { "isOpen": true },
+        "name": "idx_negociacoes_one_active_per_lead"
       }
+    },
+    {
+      "collection": "negociacoes",
+      "fields": { "importance": 1 },
+      "options": { "name": "idx_negociacoes_importance" }
+    },
+    {
+      "collection": "negociacoes",
+      "fields": { "status": 1 },
+      "options": { "name": "idx_negociacoes_status" }
+    },
+    {
+      "collection": "times",
+      "fields": { "lojaId": 1 },
+      "options": { "name": "idx_times_lojaId" }
+    },
+    {
+      "collection": "logs",
+      "fields": { "userId": 1 },
+      "options": { "name": "idx_logs_userId" }
+    },
+    {
+      "collection": "logs",
+      "fields": { "createdAt": -1 },
+      "options": { "name": "idx_logs_createdAt_desc" }
+    },
+    {
+      "collection": "logs",
+      "fields": { "eventPayload.targetId": 1 },
+      "options": { "name": "idx_logs_targetId" }
+    },
+    {
+      "collection": "logs",
+      "fields": { "eventType": 1 },
+      "options": { "name": "idx_logs_eventType" }
     }
   ]
 }

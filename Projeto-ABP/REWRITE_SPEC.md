@@ -91,6 +91,9 @@ frontend/
 5.  **CVA on Frontend:** Use `class-variance-authority` for all shared UI components to manage design system variants strictly.
 
 ## 📦 Database Schema (MongoDB Atlas)
-*References `nosql-structure.json` for specific field requirements.*
-- **Collections:** `times`, `usuarios`, `clientes`, `leads`, `logEventos`.
-- **Strategy:** Embed negotiations within leads; reference teams, users, and clients.
+*Full schema in `nosql-structure.json`. All `_id` fields are UUID v4 strings (not MongoDB ObjectId).*
+- **Collections:** `lojas`, `times`, `usuarios`, `clientes`, `leads`, `negociacoes`, `logs`.
+- **Embedding:** `negociacoes.historico` (always read with negotiation, no independent lifecycle); `logs.eventPayload` (integral part of the log event).
+- **Referencing:** `leads → clientes`, `leads → usuarios`, `leads → lojas`, `leads → times`; `negociacoes → leads`; `logs → usuarios`.
+- **Denormalization:** `leads.currentStatus` and `leads.currentImportance` mirror the active negotiation's values — kept in sync by the application layer to avoid dashboard joins.
+- **Key constraint:** unique partial index on `negociacoes(leadId) where isOpen=true` enforces the one-active-negotiation-per-lead business rule at the database level.
