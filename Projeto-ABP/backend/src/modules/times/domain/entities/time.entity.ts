@@ -1,4 +1,5 @@
-import { Entity } from '@/shared/core/entity';
+import { Entity, UUID_V4_REGEX } from '@/shared/core/entity';
+import { DomainError } from '@/shared/errors/domain-error';
 
 interface TimeProps {
   name: string;
@@ -7,6 +8,12 @@ interface TimeProps {
 
 export class TimeEntity extends Entity<TimeProps> {
   static create(props: TimeProps): TimeEntity {
+    if (!UUID_V4_REGEX.test(props.lojaId)) {
+      throw new DomainError(
+        'lojaId deve ser um UUID v4 válido.',
+        'INVALID_LOJA_ID',
+      );
+    }
     return new TimeEntity(props);
   }
 

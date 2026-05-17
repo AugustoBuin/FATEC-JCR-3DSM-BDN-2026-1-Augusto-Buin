@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { TimeSchemaClass, TimeSchema } from './infrastructure/database/mongoose/time.schema';
+import {
+  TimeSchemaClass,
+  TimeSchema,
+} from './infrastructure/database/mongoose/time.schema';
 import { MongooseTimeRepository } from './infrastructure/database/repos/mongoose-time.repository';
 import { TIME_REPOSITORY } from './domain/repositories/time-repository.interface';
 import { CreateTimeUseCase } from './application/use-cases/create-time.use-case';
